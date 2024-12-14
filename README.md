@@ -13,7 +13,7 @@ The application uses **MySQL** for data storage and is integrated with **MySQL W
 - Data storage and processing using a database managed with **MySQL** and **MySQL Workbench**.  
 
 ## Architecture  
-![DIAGRAM_TABLES](https://github.com/user-attachments/assets/cfe88a26-6f21-4a24-9129-2548886f1a90)  
+![DIAGRAM_TABLES](https://github.com/user-attachments/assets/450b5bbf-b36c-4079-89a9-4bdca2d15b5c) 
 ![DIAGRAM_DRAWING](https://github.com/user-attachments/assets/5d087398-87c9-49c2-827e-b9a79d43da41)  
 
 ## Features/Usage Examples  
