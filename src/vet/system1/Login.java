@@ -113,7 +113,7 @@ public class Login extends JFrame implements ActionListener {
                 if (rs.next()) {
                     int idDoctor = rs.getInt("id_doctor");
                     String doctorName = rs.getString("nume_doctor");
-                    JOptionPane.showMessageDialog(this, "Welcome, Dr. " + doctorName, "Login Successful", JOptionPane.INFORMATION_MESSAGE);
+                    //JOptionPane.showMessageDialog(this, "Welcome, Dr. " + doctorName, "Login Successful", JOptionPane.INFORMATION_MESSAGE);
 
                     setVisible(false);
                     MainPage.openMainPage(idDoctor);

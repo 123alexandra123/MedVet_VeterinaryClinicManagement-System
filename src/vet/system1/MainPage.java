@@ -59,16 +59,16 @@ public class MainPage extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == addPatientBtn) {
-            JOptionPane.showMessageDialog(this, "Opening Add Patient Page");
+            //JOptionPane.showMessageDialog(this, "Opening Add Patient Page");
             new AddPatientPage(idDoctor);
         } else if (e.getSource() == searchPatientBtn) {
-            JOptionPane.showMessageDialog(this, "Opening Search Patient Page");
+            //JOptionPane.showMessageDialog(this, "Opening Search Patient Page");
             new SearchPatientPage();
         } else if (e.getSource() == viewAllPatientsBtn) {
-            JOptionPane.showMessageDialog(this, "Opening View All Patients Page");
+            //JOptionPane.showMessageDialog(this, "Opening View All Patients Page");
             new ViewAllPatientsPage();
         } else if (e.getSource() == viewMyPatientsBtn) {
-            JOptionPane.showMessageDialog(this, "Opening View My Patients Page");
+            //JOptionPane.showMessageDialog(this, "Opening View My Patients Page");
             new ViewMyPatientsPage(idDoctor);
         }
     }
