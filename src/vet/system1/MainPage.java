@@ -7,16 +7,21 @@ import java.awt.event.ActionListener;
 
 public class MainPage extends JFrame implements ActionListener {
     JButton addPatientBtn, searchPatientBtn, viewAllPatientsBtn, viewMyPatientsBtn;
-    int idDoctor;
+    Doctor loggedDoctor;
 
-    public MainPage(int idDoctor) {
-        this.idDoctor = idDoctor;
+    public MainPage(Doctor doctor) {
+        this.loggedDoctor = doctor;
 
         JLabel titleLabel = new JLabel("MedVet System Management - Main Page");
         titleLabel.setBounds(80, 10, 1000, 40);
         titleLabel.setFont(new Font("Tahoma", Font.BOLD, 30));
         titleLabel.setForeground(Color.BLACK);
         add(titleLabel);
+
+        JLabel welcomeLabel = new JLabel("Welcome, Dr. " + doctor.getNumeDoctor() + " (" + doctor.getSpecializare() + ")");
+        welcomeLabel.setBounds(90, 60, 500, 30);
+        welcomeLabel.setFont(new Font("Tahoma", Font.PLAIN, 20));
+        add(welcomeLabel);
 
         addPatientBtn = new JButton("Add Patient");
         addPatientBtn.setBounds(90, 100, 200, 40);
@@ -59,22 +64,20 @@ public class MainPage extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == addPatientBtn) {
-            //JOptionPane.showMessageDialog(this, "Opening Add Patient Page");
-            new AddPatientPage(idDoctor);
+
+            new AddPatientPage(loggedDoctor);
         } else if (e.getSource() == searchPatientBtn) {
-            //JOptionPane.showMessageDialog(this, "Opening Search Patient Page");
             new SearchPatientPage();
         } else if (e.getSource() == viewAllPatientsBtn) {
-            //JOptionPane.showMessageDialog(this, "Opening View All Patients Page");
             new ViewAllPatientsPage();
         } else if (e.getSource() == viewMyPatientsBtn) {
-            //JOptionPane.showMessageDialog(this, "Opening View My Patients Page");
-            new ViewMyPatientsPage(idDoctor);
+
+            new ViewMyPatientsPage(loggedDoctor);
         }
     }
 
-    public static void openMainPage(int idDoctor) {
-        MainPage mainPage = new MainPage(idDoctor);
+    public static void openMainPage(Doctor doctor) {
+        MainPage mainPage = new MainPage(doctor);
         mainPage.setVisible(true);
     }
 }

@@ -7,9 +7,10 @@ import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.regex.Pattern;
 
 public class Login extends JFrame implements ActionListener {
-    JTextField UserField, EmailField;
+    JTextField EmailField;
     JPasswordField Password;
     JButton b1, b2;
 
@@ -26,47 +27,36 @@ public class Login extends JFrame implements ActionListener {
         logLabel.setForeground(Color.DARK_GRAY);
         add(logLabel);
 
-        JLabel nameLabel = new JLabel("Name");
-        nameLabel.setBounds(70, 160, 100, 30);
-        nameLabel.setFont(new Font("Tahoma", Font.BOLD, 20));
-        nameLabel.setForeground(Color.DARK_GRAY);
-        add(nameLabel);
-
         JLabel emailLabel = new JLabel("E-mail");
-        emailLabel.setBounds(70, 240, 100, 30);
+        emailLabel.setBounds(70, 160, 100, 30);
         emailLabel.setFont(new Font("Tahoma", Font.BOLD, 20));
         emailLabel.setForeground(Color.DARK_GRAY);
         add(emailLabel);
 
         JLabel passLabel = new JLabel("Password");
-        passLabel.setBounds(70, 320, 100, 30);
+        passLabel.setBounds(70, 240, 100, 30);
         passLabel.setFont(new Font("Tahoma", Font.BOLD, 20));
         passLabel.setForeground(Color.DARK_GRAY);
         add(passLabel);
 
-        UserField = new JTextField();
-        UserField.setBounds(200, 160, 200, 30);
-        UserField.setFont(new Font("Tahoma", Font.BOLD, 15));
-        add(UserField);
-
         EmailField = new JTextField();
-        EmailField.setBounds(200, 240, 200, 30);
+        EmailField.setBounds(200, 160, 200, 30);
         EmailField.setFont(new Font("Tahoma", Font.BOLD, 15));
         add(EmailField);
 
         Password = new JPasswordField();
-        Password.setBounds(200, 320, 200, 30);
+        Password.setBounds(200, 240, 200, 30);
         Password.setFont(new Font("Tahoma", Font.BOLD, 15));
         add(Password);
 
         b1 = new JButton("Login");
-        b1.setBounds(270, 390, 120, 30);
+        b1.setBounds(270, 310, 120, 30);
         b1.setFont(new Font("Tahoma", Font.BOLD, 15));
         b1.addActionListener(this);
         add(b1);
 
         b2 = new JButton("Cancel");
-        b2.setBounds(80, 390, 120, 30);
+        b2.setBounds(80, 310, 120, 30);
         b2.setFont(new Font("Tahoma", Font.BOLD, 15));
         b2.addActionListener(this);
         add(b2);
@@ -83,42 +73,49 @@ public class Login extends JFrame implements ActionListener {
         setLocation(370, 200);
         setLayout(null);
         setVisible(true);
-
-
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == b1) {
             try {
-                String user = UserField.getText();
                 String email = EmailField.getText();
                 String pass = new String(Password.getPassword());
 
-                if (user.isEmpty() || email.isEmpty() || pass.isEmpty()) {
-                    JOptionPane.showMessageDialog(this, "Please enter name, email, and password", "Login Error", JOptionPane.ERROR_MESSAGE);
+
+                if (!isValidEmail(email)) {
+                    JOptionPane.showMessageDialog(this, "Invalid email format. Please use the format nume.prenume@medvet.ro.", "Login Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                if (email.isEmpty() || pass.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Please enter email and password", "Login Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
                 db_conn conn = new db_conn();
                 Connection c = conn.connection;
 
-                String query = "SELECT id_doctor, nume_doctor FROM Doctori_Users WHERE nume_doctor = ? AND email = ? AND parola = ?";
+                String query = "SELECT id_doctor, nume_doctor, specializare, numar_telefon, email, parola FROM Doctori_Users WHERE email = ? AND parola = ?";
                 PreparedStatement stmt = c.prepareStatement(query);
-                stmt.setString(1, user);
-                stmt.setString(2, email);
-                stmt.setString(3, pass);
+                stmt.setString(1, email);
+                stmt.setString(2, pass);
 
                 ResultSet rs = stmt.executeQuery();
                 if (rs.next()) {
-                    int idDoctor = rs.getInt("id_doctor");
-                    String doctorName = rs.getString("nume_doctor");
-                    //JOptionPane.showMessageDialog(this, "Welcome, Dr. " + doctorName, "Login Successful", JOptionPane.INFORMATION_MESSAGE);
+                    Doctor loggedDoctor = new Doctor(
+                            rs.getInt("id_doctor"),
+                            rs.getString("nume_doctor"),
+                            rs.getString("specializare"),
+                            rs.getString("numar_telefon"),
+                            rs.getString("email"),
+                            rs.getString("parola")
+                    );
 
                     setVisible(false);
-                    MainPage.openMainPage(idDoctor);
+                    MainPage.openMainPage(loggedDoctor);
                 } else {
-                    JOptionPane.showMessageDialog(this, "Invalid name, email, or password", "Login Failed", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Invalid email or password", "Login Failed", JOptionPane.ERROR_MESSAGE);
                 }
 
                 rs.close();
@@ -131,5 +128,11 @@ public class Login extends JFrame implements ActionListener {
         } else if (e.getSource() == b2) {
             dispose();
         }
+    }
+
+
+    private boolean isValidEmail(String email) {
+        String emailRegex = "^[a-zA-Z]+\\.[a-zA-Z]+@medvet\\.ro$";
+        return Pattern.matches(emailRegex, email);
     }
 }

@@ -3,11 +3,14 @@ package vet.system1;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.*;
-import java.sql.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 public class SearchPatientPage extends JFrame {
-    JTextField nameField, idField;
+    JTextField searchField;
     JTable table;
     JButton searchByNameBtn, searchByIdBtn;
 
@@ -17,32 +20,24 @@ public class SearchPatientPage extends JFrame {
         setLocation(370, 200);
         setLayout(null);
 
-        JLabel nameLabel = new JLabel("Search by Name:");
-        nameLabel.setBounds(30, 20, 120, 30);
-        add(nameLabel);
+        JLabel searchLabel = new JLabel("Search:");
+        searchLabel.setBounds(30, 20, 120, 30);
+        add(searchLabel);
 
-        nameField = new JTextField();
-        nameField.setBounds(150, 20, 150, 30);
-        add(nameField);
+        searchField = new JTextField();
+        searchField.setBounds(150, 20, 150, 30);
+        add(searchField);
 
         searchByNameBtn = new JButton("Search by Name");
-        searchByNameBtn.setBounds(320, 20, 150, 30);
-        searchByNameBtn.addActionListener(e -> searchPatientByName(nameField.getText()));
+        searchByNameBtn.setBounds(30, 70, 150, 30);
+        searchByNameBtn.addActionListener(e -> searchPatientByName(searchField.getText()));
         add(searchByNameBtn);
 
-        JLabel idLabel = new JLabel("Search by ID:");
-        idLabel.setBounds(30, 70, 120, 30);
-        add(idLabel);
-
-        idField = new JTextField();
-        idField.setBounds(150, 70, 150, 30);
-        add(idField);
-
         searchByIdBtn = new JButton("Search by ID");
-        searchByIdBtn.setBounds(320, 70, 150, 30);
+        searchByIdBtn.setBounds(200, 70, 150, 30);
         searchByIdBtn.addActionListener(e -> {
             try {
-                int id = Integer.parseInt(idField.getText());
+                int id = Integer.parseInt(searchField.getText());
                 searchPatientById(id);
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(this, "Please enter a valid ID number.", "Invalid ID", JOptionPane.ERROR_MESSAGE);
@@ -51,21 +46,17 @@ public class SearchPatientPage extends JFrame {
         add(searchByIdBtn);
 
         String[] columnNames = {"ID", "Animal Name"};
-
-
         DefaultTableModel model = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
-
         table = new JTable(model);
 
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBounds(30, 130, 440, 200);
         add(scrollPane);
-
 
         table.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
@@ -96,9 +87,12 @@ public class SearchPatientPage extends JFrame {
 
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
-                int id = rs.getInt("id_animal");
-                String animalName = rs.getString("nume_animal");
-                model.addRow(new Object[]{id, animalName});
+                Pacient pacient = new Pacient(
+                        rs.getInt("id_animal"),
+                        rs.getString("nume_animal"),
+                        null, 0, null, null, null, null, null
+                );
+                model.addRow(new Object[]{pacient.getIdAnimal(), pacient.getNumeAnimal()});
             }
 
             rs.close();
@@ -123,8 +117,12 @@ public class SearchPatientPage extends JFrame {
 
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
-                String animalName = rs.getString("nume_animal");
-                model.addRow(new Object[]{id, animalName});
+                Pacient pacient = new Pacient(
+                        rs.getInt("id_animal"),
+                        rs.getString("nume_animal"),
+                        null, 0, null, null, null, null, null
+                );
+                model.addRow(new Object[]{pacient.getIdAnimal(), pacient.getNumeAnimal()});
             } else {
                 JOptionPane.showMessageDialog(this, "No patient found with ID: " + id, "Search Result", JOptionPane.INFORMATION_MESSAGE);
             }

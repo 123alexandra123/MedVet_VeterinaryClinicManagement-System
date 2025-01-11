@@ -2,19 +2,20 @@ package vet.system1;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
 import java.sql.*;
-import javax.swing.table.DefaultTableModel;
-import java.awt.event.*;
+import java.time.LocalDate;
+import java.util.regex.Pattern;
 
 public class PatientInfo extends JFrame {
-    int patientId;
+    private int patientId;
+    private Pacient pacient;
+    private FisaMedicala fisaMedicala;
+    private Doctor doctor;
+
     JTextField nameField, genderField, ageField, categoryField, breedField, ownerField, phoneField, emailField;
     JTextArea diagnosticField, treatmentField;
     JTextField appointmentDateField, doctorField;
     JButton editButton, saveButton, deleteButton;
-    boolean isEditing = false;
-    private JTable patientTable;
 
     public PatientInfo(int patientId) {
         this.patientId = patientId;
@@ -23,7 +24,27 @@ public class PatientInfo extends JFrame {
         setLocation(370, 200);
         setLayout(new GridLayout(0, 1));
 
+        initializeFields();
 
+        editButton = new JButton("Edit");
+        saveButton = new JButton("Save");
+        deleteButton = new JButton("Delete");
+
+        editButton.addActionListener(e -> enableEditing());
+        saveButton.addActionListener(e -> savePatient());
+        deleteButton.addActionListener(e -> deletePatient());
+
+        add(editButton);
+        add(saveButton);
+        add(deleteButton);
+
+        displayPatientInfo();
+        setFieldsEditable(false);
+        saveButton.setEnabled(false);
+        setVisible(true);
+    }
+
+    private void initializeFields() {
         nameField = new JTextField();
         genderField = new JTextField();
         ageField = new JTextField();
@@ -36,8 +57,6 @@ public class PatientInfo extends JFrame {
         treatmentField = new JTextArea();
         appointmentDateField = new JTextField();
         doctorField = new JTextField();
-
-
         doctorField.setEditable(false);
 
         add(new JLabel("Animal Name:"));
@@ -64,31 +83,15 @@ public class PatientInfo extends JFrame {
         add(appointmentDateField);
         add(new JLabel("Doctor:"));
         add(doctorField);
-
-        editButton = new JButton("Edit");
-        saveButton = new JButton("Save");
-        deleteButton = new JButton("Delete");
-
-        editButton.addActionListener(e -> enableEditing());
-        saveButton.addActionListener(e -> savePatient());
-        deleteButton.addActionListener(e -> deletePatient());
-
-        add(editButton);
-        add(saveButton);
-        add(deleteButton);
-
-        displayPatientInfo();
-        setFieldsEditable(false);
-        saveButton.setEnabled(false);
-        setVisible(true);
     }
 
     private void displayPatientInfo() {
         try {
             db_conn conn = new db_conn();
             PreparedStatement stmt = conn.connection.prepareStatement(
-                    "SELECT p.nume_animal, p.gen, p.varsta, p.categorie, p.rasa, p.nume_stapan, p.numar_telefon_stapan, p.email_stapan, " +
-                            "f.diagnostic, f.tratament_recomandari, f.data_programare, d.nume_doctor " +
+                    "SELECT p.id_animal, p.nume_animal, p.gen, p.varsta, p.categorie, p.rasa, p.nume_stapan, p.numar_telefon_stapan, p.email_stapan, " +
+                            "f.id_fisa, f.diagnostic, f.tratament_recomandari, f.data_programare, " +
+                            "d.id_doctor, d.nume_doctor, d.specializare, d.numar_telefon, d.email, d.parola " +
                             "FROM Pacienti_Animale p " +
                             "JOIN Fisa_Medicala f ON p.id_animal = f.id_animal " +
                             "JOIN Doctori_Users d ON f.id_doctor = d.id_doctor " +
@@ -97,22 +100,56 @@ public class PatientInfo extends JFrame {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                nameField.setText(rs.getString("nume_animal"));
-                genderField.setText(rs.getString("gen"));
-                ageField.setText(String.valueOf(rs.getInt("varsta")));
-                categoryField.setText(rs.getString("categorie"));
-                breedField.setText(rs.getString("rasa"));
-                ownerField.setText(rs.getString("nume_stapan"));
-                phoneField.setText(rs.getString("numar_telefon_stapan"));
-                emailField.setText(rs.getString("email_stapan"));
-                diagnosticField.setText(rs.getString("diagnostic"));
-                treatmentField.setText(rs.getString("tratament_recomandari"));
-                appointmentDateField.setText(rs.getDate("data_programare").toString());
-                doctorField.setText(rs.getString("nume_doctor"));
+                pacient = new Pacient(
+                        rs.getInt("id_animal"),
+                        rs.getString("nume_animal"),
+                        rs.getString("gen"),
+                        rs.getInt("varsta"),
+                        rs.getString("categorie"),
+                        rs.getString("rasa"),
+                        rs.getString("nume_stapan"),
+                        rs.getString("numar_telefon_stapan"),
+                        rs.getString("email_stapan")
+                );
+
+                fisaMedicala = new FisaMedicala(
+                        rs.getInt("id_fisa"),
+                        rs.getInt("id_doctor"),
+                        rs.getInt("id_animal"),
+                        rs.getString("diagnostic"),
+                        rs.getString("tratament_recomandari"),
+                        rs.getDate("data_programare").toLocalDate()
+                );
+
+                doctor = new Doctor(
+                        rs.getInt("id_doctor"),
+                        rs.getString("nume_doctor"),
+                        rs.getString("specializare"),
+                        rs.getString("numar_telefon"),
+                        rs.getString("email"),
+                        rs.getString("parola")
+                );
+
+                populateFields();
             }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
+
+    private void populateFields() {
+        nameField.setText(pacient.getNumeAnimal());
+        genderField.setText(pacient.getGen());
+        ageField.setText(String.valueOf(pacient.getVarsta()));
+        categoryField.setText(pacient.getCategorie());
+        breedField.setText(pacient.getRasa());
+        ownerField.setText(pacient.getNumeStapan());
+        phoneField.setText(pacient.getNumarTelefonStapan());
+        emailField.setText(pacient.getEmailStapan());
+        diagnosticField.setText(fisaMedicala.getDiagnostic());
+        treatmentField.setText(fisaMedicala.getTratamentRecomandari());
+        appointmentDateField.setText(fisaMedicala.getDataProgramare().toString());
+        doctorField.setText(doctor.getNumeDoctor());
     }
 
     private void setFieldsEditable(boolean editable) {
@@ -137,8 +174,26 @@ public class PatientInfo extends JFrame {
 
     private void savePatient() {
         try {
-            db_conn conn = new db_conn();
 
+            String phone = phoneField.getText();
+            if (!isValidPhoneNumber(phone)) {
+                JOptionPane.showMessageDialog(this, "Phone number must have exactly 10 digits.", "Validation Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            String email = emailField.getText();
+            if (!isValidEmail(email)) {
+                JOptionPane.showMessageDialog(this, "Invalid email format. Please use a valid email address.", "Validation Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            String date = appointmentDateField.getText();
+            if (!isValidDate(date)) {
+                JOptionPane.showMessageDialog(this, "Invalid date format. Please use YYYY-MM-DD.", "Validation Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            db_conn conn = new db_conn();
 
             PreparedStatement updateAnimal = conn.connection.prepareStatement(
                     "UPDATE Pacienti_Animale SET nume_animal = ?, gen = ?, varsta = ?, categorie = ?, rasa = ?, nume_stapan = ?, numar_telefon_stapan = ?, email_stapan = ? WHERE id_animal = ?");
@@ -148,18 +203,17 @@ public class PatientInfo extends JFrame {
             updateAnimal.setString(4, categoryField.getText());
             updateAnimal.setString(5, breedField.getText());
             updateAnimal.setString(6, ownerField.getText());
-            updateAnimal.setString(7, phoneField.getText());
-            updateAnimal.setString(8, emailField.getText());
-            updateAnimal.setInt(9, patientId);
+            updateAnimal.setString(7, phone);
+            updateAnimal.setString(8, email);
+            updateAnimal.setInt(9, pacient.getIdAnimal());
             updateAnimal.executeUpdate();
 
-
             PreparedStatement updateMedical = conn.connection.prepareStatement(
-                    "UPDATE Fisa_Medicala SET diagnostic = ?, tratament_recomandari = ?, data_programare = ? WHERE id_animal = ?");
+                    "UPDATE Fisa_Medicala SET diagnostic = ?, tratament_recomandari = ?, data_programare = ? WHERE id_fisa = ?");
             updateMedical.setString(1, diagnosticField.getText());
             updateMedical.setString(2, treatmentField.getText());
-            updateMedical.setDate(3, Date.valueOf(appointmentDateField.getText()));
-            updateMedical.setInt(4, patientId);
+            updateMedical.setDate(3, Date.valueOf(date));
+            updateMedical.setInt(4, fisaMedicala.getIdFisa());
             updateMedical.executeUpdate();
 
             JOptionPane.showMessageDialog(this, "Patient information updated successfully.");
@@ -173,29 +227,21 @@ public class PatientInfo extends JFrame {
         }
     }
 
-
-
-
     private void deletePatient() {
         int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to delete this patient?", "Delete", JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
             try {
                 db_conn conn = new db_conn();
 
-
                 PreparedStatement stmtMedicalRecord = conn.connection.prepareStatement("DELETE FROM Fisa_Medicala WHERE id_animal = ?");
-                stmtMedicalRecord.setInt(1, patientId);
+                stmtMedicalRecord.setInt(1, pacient.getIdAnimal());
                 stmtMedicalRecord.executeUpdate();
 
-
                 PreparedStatement stmtAnimal = conn.connection.prepareStatement("DELETE FROM Pacienti_Animale WHERE id_animal = ?");
-                stmtAnimal.setInt(1, patientId);
+                stmtAnimal.setInt(1, pacient.getIdAnimal());
                 stmtAnimal.executeUpdate();
 
                 JOptionPane.showMessageDialog(this, "Patient deleted successfully.");
-
-
-
                 dispose();
 
             } catch (Exception ex) {
@@ -205,4 +251,21 @@ public class PatientInfo extends JFrame {
         }
     }
 
+    private boolean isValidPhoneNumber(String phone) {
+        return phone.matches("\\d{10}");
+    }
+
+    private boolean isValidEmail(String email) {
+        String emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
+        return Pattern.matches(emailRegex, email);
+    }
+
+    private boolean isValidDate(String date) {
+        try {
+            LocalDate.parse(date);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }

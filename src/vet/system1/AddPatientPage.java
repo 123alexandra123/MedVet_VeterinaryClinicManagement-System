@@ -6,15 +6,21 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.Statement;
+import java.sql.ResultSet;
+import java.sql.Date;
+import java.time.LocalDate;
+import java.util.regex.Pattern;
 
 public class AddPatientPage extends JFrame implements ActionListener {
     JTextField nameField, genderField, ageField, categoryField, breedField, ownerNameField, ownerPhoneField, ownerEmailField;
     JTextField diagnosticField, treatmentField, appointmentDateField;
     JButton submitBtn, backBtn;
-    int idDoctor;
+    Doctor loggedDoctor;
 
-    public AddPatientPage(int idDoctor) {
-        this.idDoctor = idDoctor;
+    public AddPatientPage(Doctor doctor) {
+        this.loggedDoctor = doctor;
+
 
         JLabel titleLabel = new JLabel("Add New Patient");
         titleLabel.setBounds(145, 10, 300, 30);
@@ -23,74 +29,49 @@ public class AddPatientPage extends JFrame implements ActionListener {
 
 
         nameField = new JTextField();
-        nameField.setBounds(300, 60, 200, 30);
-        add(nameField);
-        addField("Animal Name: ", 60);
+        addField("Animal Name:", 60, nameField);
 
         genderField = new JTextField();
-        genderField.setBounds(300, 100, 200, 30);
-        add(genderField);
-        addField("Gender: ", 100);
+        addField("Gender:", 100, genderField);
 
         ageField = new JTextField();
-        ageField.setBounds(300, 140, 200, 30);
-        add(ageField);
-        addField("Age: ", 140);
+        addField("Age:", 140, ageField);
 
         categoryField = new JTextField();
-        categoryField.setBounds(300, 180, 200, 30);
-        add(categoryField);
-        addField("Category: ", 180);
+        addField("Category:", 180, categoryField);
 
         breedField = new JTextField();
-        breedField.setBounds(300, 220, 200, 30);
-        add(breedField);
-        addField("Breed: ", 220);
+        addField("Breed:", 220, breedField);
 
         ownerNameField = new JTextField();
-        ownerNameField.setBounds(300, 260, 200, 30);
-        add(ownerNameField);
-        addField("Owner Name: ", 260);
+        addField("Owner Name:", 260, ownerNameField);
 
         ownerPhoneField = new JTextField();
-        ownerPhoneField.setBounds(300, 300, 200, 30);
-        add(ownerPhoneField);
-        addField("Owner Phone: ", 300);
+        addField("Owner Phone:", 300, ownerPhoneField);
 
         ownerEmailField = new JTextField();
-        ownerEmailField.setBounds(300, 340, 200, 30);
-        add(ownerEmailField);
-        addField("Owner E-mail: ", 340);
-
+        addField("Owner Email:", 340, ownerEmailField);
 
         diagnosticField = new JTextField();
-        diagnosticField.setBounds(300, 380, 200, 30);
-        add(diagnosticField);
-        addField("Diagnostic: ", 380);
+        addField("Diagnostic:", 380, diagnosticField);
 
         treatmentField = new JTextField();
-        treatmentField.setBounds(300, 420, 200, 30);
-        add(treatmentField);
-        addField("Treatment/Recommendations: ", 420);
+        addField("Treatment:", 420, treatmentField);
 
         appointmentDateField = new JTextField();
-        appointmentDateField.setBounds(300, 460, 200, 30);
-        add(appointmentDateField);
-        addField("Schedule Date (year-mounth-day): ", 460);
+        addField("Appointment Date (yyyy-mm-dd):", 460, appointmentDateField);
 
 
         backBtn = new JButton("Back");
         backBtn.setBounds(290, 700, 100, 30);
-        backBtn.setFont(new Font("Tahoma", Font.BOLD, 15));
         backBtn.addActionListener(this);
         add(backBtn);
 
-
         submitBtn = new JButton("Send");
         submitBtn.setBounds(140, 700, 100, 30);
-        submitBtn.setFont(new Font("Tahoma", Font.BOLD, 15));
         submitBtn.addActionListener(this);
         add(submitBtn);
+
 
         ImageIcon icon = new ImageIcon(ClassLoader.getSystemResource("vet/system1/icons/fisa.png"));
         Image i1 = icon.getImage().getScaledInstance(150, 150, Image.SCALE_DEFAULT);
@@ -100,67 +81,127 @@ public class AddPatientPage extends JFrame implements ActionListener {
         add(iconLabel);
 
 
-
         getContentPane().setBackground(new Color(216, 193, 232));
         setSize(530, 800);
         setLocation(400, 40);
         setLayout(null);
         setVisible(true);
-
-
-
     }
 
-    private void addField(String label, int y) {
+    private void addField(String label, int y, JTextField field) {
         JLabel jLabel = new JLabel(label);
-        jLabel.setFont(new Font("Tahoma", Font.BOLD, 15));
         jLabel.setBounds(20, y, 300, 30);
-        jLabel.setForeground(Color.DARK_GRAY);
         add(jLabel);
+
+        field.setBounds(300, y, 200, 30);
+        add(field);
     }
-
-
 
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == submitBtn) {
             try {
+
+                String phone = ownerPhoneField.getText();
+                if (!isValidPhoneNumber(phone)) {
+                    JOptionPane.showMessageDialog(this, "Phone number must have exactly 10 digits.", "Validation Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                String email = ownerEmailField.getText();
+                if (!isValidEmail(email)) {
+                    JOptionPane.showMessageDialog(this, "Invalid email format. Please use a valid email address.", "Validation Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                String appointmentDate = appointmentDateField.getText();
+                if (!isValidDate(appointmentDate)) {
+                    JOptionPane.showMessageDialog(this, "Invalid date format. Please use YYYY-MM-DD.", "Validation Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+
+                Pacient pacient = new Pacient(
+                        0,
+                        nameField.getText(),
+                        genderField.getText(),
+                        Integer.parseInt(ageField.getText()),
+                        categoryField.getText(),
+                        breedField.getText(),
+                        ownerNameField.getText(),
+                        phone,
+                        email
+                );
+
+                FisaMedicala fisaMedicala = new FisaMedicala(
+                        0,
+                        loggedDoctor.getIdDoctor(),
+                        0,
+                        diagnosticField.getText(),
+                        treatmentField.getText(),
+                        LocalDate.parse(appointmentDate)
+                );
+
+
                 db_conn conn = new db_conn();
                 Connection c = conn.connection;
 
 
                 String patientQuery = "INSERT INTO Pacienti_Animale (nume_animal, gen, varsta, categorie, rasa, nume_stapan, numar_telefon_stapan, email_stapan) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-                PreparedStatement patientStmt = c.prepareStatement(patientQuery);
-                patientStmt.setString(1, nameField.getText());
-                patientStmt.setString(2, genderField.getText());
-                patientStmt.setInt(3, Integer.parseInt(ageField.getText()));
-                patientStmt.setString(4, categoryField.getText());
-                patientStmt.setString(5, breedField.getText());
-                patientStmt.setString(6, ownerNameField.getText());
-                patientStmt.setString(7, ownerPhoneField.getText());
-                patientStmt.setString(8, ownerEmailField.getText());
-
-
+                PreparedStatement patientStmt = c.prepareStatement(patientQuery, Statement.RETURN_GENERATED_KEYS);
+                patientStmt.setString(1, pacient.getNumeAnimal());
+                patientStmt.setString(2, pacient.getGen());
+                patientStmt.setInt(3, pacient.getVarsta());
+                patientStmt.setString(4, pacient.getCategorie());
+                patientStmt.setString(5, pacient.getRasa());
+                patientStmt.setString(6, pacient.getNumeStapan());
+                patientStmt.setString(7, pacient.getNumarTelefonStapan());
+                patientStmt.setString(8, pacient.getEmailStapan());
                 patientStmt.executeUpdate();
 
+                ResultSet rs = patientStmt.getGeneratedKeys();
+                if (rs.next()) {
+                    int idPacient = rs.getInt(1);
+                    pacient.setIdAnimal(idPacient);
+                }
 
-                String medicalRecordQuery = "INSERT INTO Fisa_Medicala (id_doctor, id_animal, diagnostic, tratament_recomandari, data_programare) VALUES (?, LAST_INSERT_ID(), ?, ?, ?)";
-                PreparedStatement medicalStmt = c.prepareStatement(medicalRecordQuery);
-                medicalStmt.setInt(1, idDoctor);
-                medicalStmt.setString(2, diagnosticField.getText());
-                medicalStmt.setString(3, treatmentField.getText());
-                medicalStmt.setString(4, appointmentDateField.getText());
 
+                String medicalQuery = "INSERT INTO Fisa_Medicala (id_doctor, id_animal, diagnostic, tratament_recomandari, data_programare) VALUES (?, ?, ?, ?, ?)";
+                PreparedStatement medicalStmt = c.prepareStatement(medicalQuery);
+                medicalStmt.setInt(1, fisaMedicala.getIdDoctor());
+                medicalStmt.setInt(2, pacient.getIdAnimal());
+                medicalStmt.setString(3, fisaMedicala.getDiagnostic());
+                medicalStmt.setString(4, fisaMedicala.getTratamentRecomandari());
+                medicalStmt.setDate(5, Date.valueOf(fisaMedicala.getDataProgramare()));
                 medicalStmt.executeUpdate();
-                JOptionPane.showMessageDialog(this, "Pacient și fișă medicală adăugate cu succes!", "Succes", JOptionPane.INFORMATION_MESSAGE);
+
+                JOptionPane.showMessageDialog(this, "Patient and medical record added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
                 this.dispose();
             } catch (Exception ex) {
                 ex.printStackTrace();
-                JOptionPane.showMessageDialog(this, "Eroare la adăugare pacient: " + ex.getMessage(), "Eroare", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Error adding patient: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         } else if (e.getSource() == backBtn) {
             this.dispose();
-            MainPage.openMainPage(idDoctor);
+            MainPage.openMainPage(loggedDoctor);
+        }
+    }
+
+    private boolean isValidPhoneNumber(String phone) {
+        return phone.matches("\\d{10}");
+    }
+
+    private boolean isValidEmail(String email) {
+        String emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
+        return Pattern.matches(emailRegex, email);
+    }
+
+    private boolean isValidDate(String date) {
+        try {
+            LocalDate.parse(date);
+            return true;
+        } catch (Exception e) {
+            return false;
         }
     }
 }
