@@ -1,10 +1,13 @@
+
 package vet.system1;
 
 import org.junit.jupiter.api.Test;
-
 import java.sql.Connection;
-
 import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * Class to test the database connection
+ */
 
 public class db_connTest {
 

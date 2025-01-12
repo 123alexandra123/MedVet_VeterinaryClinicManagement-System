@@ -1,15 +1,20 @@
+
+
 package vet.system1;
 
 import org.junit.jupiter.api.Test;
-
 import javax.swing.table.DefaultTableModel;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * Class that tests the ViewAllPatientsPage class.
+ * It tests if the patients are displayed correctly in the table.
+ */
 
 public class ViewAllPatientsPageTest {
 
@@ -17,7 +22,7 @@ public class ViewAllPatientsPageTest {
     public void testAllPatientsDisplayedCorrectly() {
         ViewAllPatientsPage page = new ViewAllPatientsPage();
 
-        // Fetch all patient data directly from the database
+
         List<String> expectedPatientNames = new ArrayList<>();
         List<Integer> expectedPatientIds = new ArrayList<>();
         try {
@@ -38,7 +43,7 @@ public class ViewAllPatientsPageTest {
             fail("Database query failed: " + e.getMessage());
         }
 
-        // Retrieve data from the table model
+
         DefaultTableModel model = (DefaultTableModel) page.table.getModel();
         List<String> actualPatientNames = new ArrayList<>();
         List<Integer> actualPatientIds = new ArrayList<>();
@@ -47,7 +52,7 @@ public class ViewAllPatientsPageTest {
             actualPatientNames.add((String) model.getValueAt(i, 1));
         }
 
-        // Compare the expected and actual results
+
         assertEquals(expectedPatientIds, actualPatientIds, "The IDs of patients should match.");
         assertEquals(expectedPatientNames, actualPatientNames, "The names of patients should match.");
     }

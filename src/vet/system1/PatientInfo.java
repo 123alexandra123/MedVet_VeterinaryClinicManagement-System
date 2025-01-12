@@ -6,17 +6,27 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.util.regex.Pattern;
 
+/**
+ * A window that lets you view and manage a patient's information.
+ * You can see details about the animal, owner, diagnosis, and more.
+ * This window also allows editing, saving, or deleting the patient's details.
+ */
 public class PatientInfo extends JFrame {
-    private int patientId;
-    private Pacient pacient;
-    private FisaMedicala fisaMedicala;
-    private Doctor doctor;
+    private int patientId; // ID of the patient being displayed
+    private Pacient pacient; // Stores the patient details
+    private FisaMedicala fisaMedicala; // Stores the medical record details
+    private Doctor doctor; // Stores the doctor details
 
     JTextField nameField, genderField, ageField, categoryField, breedField, ownerField, phoneField, emailField;
     JTextArea diagnosticField, treatmentField;
     JTextField appointmentDateField, doctorField;
     JButton editButton, saveButton, deleteButton;
 
+    /**
+     * Opens a window to display a patient's information.
+     *
+     * @param patientId The ID of the patient to display.
+     */
     public PatientInfo(int patientId) {
         this.patientId = patientId;
         setTitle("Patient Information");
@@ -44,6 +54,9 @@ public class PatientInfo extends JFrame {
         setVisible(true);
     }
 
+    /**
+     * Prepares the input fields to display patient details like name, diagnosis, and more.
+     */
     private void initializeFields() {
         nameField = new JTextField();
         genderField = new JTextField();
@@ -85,6 +98,9 @@ public class PatientInfo extends JFrame {
         add(doctorField);
     }
 
+    /**
+     * Fetches and displays all details about the patient, medical record, and doctor from the database.
+     */
     private void displayPatientInfo() {
         try {
             db_conn conn = new db_conn();
@@ -137,6 +153,9 @@ public class PatientInfo extends JFrame {
         }
     }
 
+    /**
+     * Fills the fields with the patient's data for easy viewing.
+     */
     private void populateFields() {
         nameField.setText(pacient.getNumeAnimal());
         genderField.setText(pacient.getGen());
@@ -152,6 +171,11 @@ public class PatientInfo extends JFrame {
         doctorField.setText(doctor.getNumeDoctor());
     }
 
+    /**
+     * Toggles whether the fields are editable or not.
+     *
+     * @param editable True if fields should be editable, false otherwise.
+     */
     private void setFieldsEditable(boolean editable) {
         nameField.setEditable(editable);
         genderField.setEditable(editable);
@@ -166,15 +190,22 @@ public class PatientInfo extends JFrame {
         appointmentDateField.setEditable(editable);
     }
 
+    /**
+     * Allows editing the patient's details.
+     */
     private void enableEditing() {
         setFieldsEditable(true);
         saveButton.setEnabled(true);
         editButton.setEnabled(false);
     }
 
+
+    /**
+     * Saves the updated patient details back to the database.
+     * Displays specific error messages for invalid phone number, email, or date.
+     */
     private void savePatient() {
         try {
-
             String phone = phoneField.getText();
             if (!isValidPhoneNumber(phone)) {
                 JOptionPane.showMessageDialog(this, "Phone number must have exactly 10 digits.", "Validation Error", JOptionPane.ERROR_MESSAGE);
@@ -194,9 +225,9 @@ public class PatientInfo extends JFrame {
             }
 
             db_conn conn = new db_conn();
-
             PreparedStatement updateAnimal = conn.connection.prepareStatement(
-                    "UPDATE Pacienti_Animale SET nume_animal = ?, gen = ?, varsta = ?, categorie = ?, rasa = ?, nume_stapan = ?, numar_telefon_stapan = ?, email_stapan = ? WHERE id_animal = ?");
+                    "UPDATE Pacienti_Animale SET nume_animal = ?, gen = ?, varsta = ?, categorie = ?, rasa = ?, nume_stapan = ?, numar_telefon_stapan = ?, email_stapan = ? WHERE id_animal = ?"
+            );
             updateAnimal.setString(1, nameField.getText());
             updateAnimal.setString(2, genderField.getText());
             updateAnimal.setInt(3, Integer.parseInt(ageField.getText()));
@@ -209,7 +240,8 @@ public class PatientInfo extends JFrame {
             updateAnimal.executeUpdate();
 
             PreparedStatement updateMedical = conn.connection.prepareStatement(
-                    "UPDATE Fisa_Medicala SET diagnostic = ?, tratament_recomandari = ?, data_programare = ? WHERE id_fisa = ?");
+                    "UPDATE Fisa_Medicala SET diagnostic = ?, tratament_recomandari = ?, data_programare = ? WHERE id_fisa = ?"
+            );
             updateMedical.setString(1, diagnosticField.getText());
             updateMedical.setString(2, treatmentField.getText());
             updateMedical.setDate(3, Date.valueOf(date));
@@ -221,12 +253,21 @@ public class PatientInfo extends JFrame {
             saveButton.setEnabled(false);
             editButton.setEnabled(true);
 
-        } catch (Exception ex) {
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Age must be a valid number.", "Validation Error", JOptionPane.ERROR_MESSAGE);
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Database error while updating patient information.", "Database Error", JOptionPane.ERROR_MESSAGE);
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error updating patient information.");
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "An unexpected error occurred: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
         }
     }
 
+
+    /**
+     * Deletes the patient and their medical record from the database.
+     */
     private void deletePatient() {
         int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to delete this patient?", "Delete", JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
@@ -243,7 +284,6 @@ public class PatientInfo extends JFrame {
 
                 JOptionPane.showMessageDialog(this, "Patient deleted successfully.");
                 dispose();
-
             } catch (Exception ex) {
                 ex.printStackTrace();
                 JOptionPane.showMessageDialog(this, "Error deleting patient.");
@@ -251,15 +291,34 @@ public class PatientInfo extends JFrame {
         }
     }
 
-    public boolean isValidPhoneNumber(String phone) {
-        return phone.matches("\\d{10}");
-    }
+/**
+ * Checks if a phone number has exactly 10 digits.
+ *
+ * @param phone The phone number to validate.
+ * @return True if valid, false
+ * otherwise false.
+ */
+public boolean isValidPhoneNumber(String phone) {
+    return phone.matches("\\d{10}");
+}
 
+    /**
+     * Checks if the email is in the correct format.
+     *
+     * @param email The email to validate.
+     * @return True if valid, false otherwise.
+     */
     public boolean isValidEmail(String email) {
         String emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
         return Pattern.matches(emailRegex, email);
     }
 
+    /**
+     * Validates if the date is in the correct format (YYYY-MM-DD).
+     *
+     * @param date The date to validate.
+     * @return True if valid, false otherwise.
+     */
     public boolean isValidDate(String date) {
         try {
             LocalDate.parse(date);

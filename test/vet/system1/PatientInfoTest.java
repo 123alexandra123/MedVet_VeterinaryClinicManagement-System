@@ -1,14 +1,20 @@
+
+
 package vet.system1;
 
 import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * Class to test the PatientInfo class
+ * It tests the isValidPhoneNumber, isValidEmail and isValidDate methods.
+ */
 
 public class PatientInfoTest {
 
     @Test
     public void testIsValidPhoneNumber() {
-        PatientInfo patientInfo = new PatientInfo(1); // Using a dummy patientId
+        PatientInfo patientInfo = new PatientInfo(1);
 
         assertTrue(patientInfo.isValidPhoneNumber("0123456789"), "Valid phone number should pass");
         assertFalse(patientInfo.isValidPhoneNumber("12345"), "Invalid phone number should fail");
@@ -17,7 +23,7 @@ public class PatientInfoTest {
 
     @Test
     public void testIsValidEmail() {
-        PatientInfo patientInfo = new PatientInfo(1); // Using a dummy patientId
+        PatientInfo patientInfo = new PatientInfo(1);
 
         assertTrue(patientInfo.isValidEmail("test@example.com"), "Valid email should pass");
         assertFalse(patientInfo.isValidEmail("invalid-email"), "Invalid email should fail");
@@ -26,7 +32,7 @@ public class PatientInfoTest {
 
     @Test
     public void testIsValidDate() {
-        PatientInfo patientInfo = new PatientInfo(1); // Using a dummy patientId
+        PatientInfo patientInfo = new PatientInfo(1);
 
         assertTrue(patientInfo.isValidDate("2023-12-01"), "Valid date should pass");
         assertFalse(patientInfo.isValidDate("12-01-2023"), "Invalid date format should fail");

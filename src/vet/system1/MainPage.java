@@ -1,3 +1,4 @@
+
 package vet.system1;
 
 import javax.swing.*;
@@ -5,10 +6,21 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+/**
+ * Represents the main page of the application.
+ * Provides navigation options for different operations like adding patients,
+ * searching patients, and viewing patient records.
+ */
+
 public class MainPage extends JFrame implements ActionListener {
     JButton addPatientBtn, searchPatientBtn, viewAllPatientsBtn, viewMyPatientsBtn;
     Doctor loggedDoctor;
 
+    /**
+     * Constructs the main page for the application.
+     *
+     * @param doctor The currently logged-in doctor.
+     */
     public MainPage(Doctor doctor) {
         this.loggedDoctor = doctor;
 
@@ -61,21 +73,29 @@ public class MainPage extends JFrame implements ActionListener {
         setVisible(true);
     }
 
+    /**
+     * Handles button click events for navigation.
+     *
+     * @param e The action event triggered by a button click.
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == addPatientBtn) {
-
-            new AddPatientPage(loggedDoctor);
+            new AddPatientPage(loggedDoctor); // Open the Add Patient Page
         } else if (e.getSource() == searchPatientBtn) {
-            new SearchPatientPage();
+            new SearchPatientPage(); // Open the Search Patient Page
         } else if (e.getSource() == viewAllPatientsBtn) {
-            new ViewAllPatientsPage();
+            new ViewAllPatientsPage(); // Open the View All Patients Page
         } else if (e.getSource() == viewMyPatientsBtn) {
-
-            new ViewMyPatientsPage(loggedDoctor);
+            new ViewMyPatientsPage(loggedDoctor); // Open the View My Patients Page
         }
     }
 
+    /**
+     * Opens the main page of the application.
+     *
+     * @param doctor The currently logged-in doctor.
+     */
     public static void openMainPage(Doctor doctor) {
         MainPage mainPage = new MainPage(doctor);
         mainPage.setVisible(true);

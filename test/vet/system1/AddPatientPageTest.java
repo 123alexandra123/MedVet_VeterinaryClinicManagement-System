@@ -1,8 +1,14 @@
+
 package vet.system1;
 
 import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * Class that tests the AddPatientPage class.
+ * It tests the isValidPhoneNumber, isValidEmail and isValidDate methods.
+ */
+
 
 public class AddPatientPageTest {
 

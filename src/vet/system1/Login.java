@@ -1,3 +1,4 @@
+
 package vet.system1;
 
 import javax.swing.*;
@@ -9,11 +10,29 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.regex.Pattern;
 
-public class Login extends JFrame implements ActionListener {
-    JTextField EmailField;
-    JPasswordField Password;
-    JButton b1, b2;
+/**
+ * Represents the login for the MedVet System Management App.
+ * Handles user authentication based on email and password.
+ */
 
+public class Login extends JFrame implements ActionListener {
+
+    /** Input field for the user's email. */
+    JTextField EmailField;
+
+    /** Input field for the user's password. */
+    JPasswordField Password;
+
+    /** Button to submit the login form. */
+    JButton b1;
+
+    /** Button to cancel the login process. */
+    JButton b2;
+
+    /**
+     * Constructs the login page with all its components.
+     * Sets up the layout and adds labels, input fields, and buttons.
+     */
     public Login() {
         JLabel welLabel = new JLabel("Welcome to the MedVet System Management App");
         welLabel.setBounds(50, 10, 1000, 40);
@@ -75,6 +94,11 @@ public class Login extends JFrame implements ActionListener {
         setVisible(true);
     }
 
+    /**
+     * Handles button clicks for login or cancel.
+     *
+     * @param e The action event triggered by button clicks.
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == b1) {
@@ -82,12 +106,13 @@ public class Login extends JFrame implements ActionListener {
                 String email = EmailField.getText();
                 String pass = new String(Password.getPassword());
 
-
+                // Validate email format
                 if (!isValidEmail(email)) {
                     JOptionPane.showMessageDialog(this, "Invalid email format. Please use the format nume.prenume@medvet.ro.", "Login Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
+                // Check if email or password fields are empty
                 if (email.isEmpty() || pass.isEmpty()) {
                     JOptionPane.showMessageDialog(this, "Please enter email and password", "Login Error", JOptionPane.ERROR_MESSAGE);
                     return;
@@ -96,13 +121,16 @@ public class Login extends JFrame implements ActionListener {
                 db_conn conn = new db_conn();
                 Connection c = conn.connection;
 
+                // SQL query to check login credentials
                 String query = "SELECT id_doctor, nume_doctor, specializare, numar_telefon, email, parola FROM Doctori_Users WHERE email = ? AND parola = ?";
                 PreparedStatement stmt = c.prepareStatement(query);
                 stmt.setString(1, email);
                 stmt.setString(2, pass);
 
                 ResultSet rs = stmt.executeQuery();
+
                 if (rs.next()) {
+                    // User credentials are valid, open main page
                     Doctor loggedDoctor = new Doctor(
                             rs.getInt("id_doctor"),
                             rs.getString("nume_doctor"),
@@ -115,6 +143,7 @@ public class Login extends JFrame implements ActionListener {
                     setVisible(false);
                     MainPage.openMainPage(loggedDoctor);
                 } else {
+                    // Invalid credentials
                     JOptionPane.showMessageDialog(this, "Invalid email or password", "Login Failed", JOptionPane.ERROR_MESSAGE);
                 }
 
@@ -130,7 +159,12 @@ public class Login extends JFrame implements ActionListener {
         }
     }
 
-
+    /**
+     * Validates the format of an email address.
+     *
+     * @param email The email address to validate.
+     * @return true if the email format is valid, false otherwise.
+     */
     public boolean isValidEmail(String email) {
         String emailRegex = "^[a-zA-Z]+\\.[a-zA-Z]+@medvet\\.ro$";
         return Pattern.matches(emailRegex, email);
