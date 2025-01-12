@@ -131,7 +131,7 @@ public class Login extends JFrame implements ActionListener {
     }
 
 
-    private boolean isValidEmail(String email) {
+    public boolean isValidEmail(String email) {
         String emailRegex = "^[a-zA-Z]+\\.[a-zA-Z]+@medvet\\.ro$";
         return Pattern.matches(emailRegex, email);
     }

@@ -251,16 +251,16 @@ public class PatientInfo extends JFrame {
         }
     }
 
-    private boolean isValidPhoneNumber(String phone) {
+    public boolean isValidPhoneNumber(String phone) {
         return phone.matches("\\d{10}");
     }
 
-    private boolean isValidEmail(String email) {
+    public boolean isValidEmail(String email) {
         String emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
         return Pattern.matches(emailRegex, email);
     }
 
-    private boolean isValidDate(String date) {
+    public boolean isValidDate(String date) {
         try {
             LocalDate.parse(date);
             return true;

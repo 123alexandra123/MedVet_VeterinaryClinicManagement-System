@@ -73,7 +73,7 @@ public class SearchPatientPage extends JFrame {
         setVisible(true);
     }
 
-    private void searchPatientByName(String name) {
+    public void searchPatientByName(String name) {
         DefaultTableModel model = (DefaultTableModel) table.getModel();
         model.setRowCount(0);
 
@@ -103,7 +103,7 @@ public class SearchPatientPage extends JFrame {
         }
     }
 
-    private void searchPatientById(int id) {
+    public void searchPatientById(int id) {
         DefaultTableModel model = (DefaultTableModel) table.getModel();
         model.setRowCount(0);
 
@@ -123,8 +123,6 @@ public class SearchPatientPage extends JFrame {
                         null, 0, null, null, null, null, null
                 );
                 model.addRow(new Object[]{pacient.getIdAnimal(), pacient.getNumeAnimal()});
-            } else {
-                JOptionPane.showMessageDialog(this, "No patient found with ID: " + id, "Search Result", JOptionPane.INFORMATION_MESSAGE);
             }
 
             rs.close();
